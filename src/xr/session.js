@@ -1,25 +1,36 @@
 import * as THREE from "three";
 import { APP_CONFIG } from "../app/config.js";
 import { createAlignmentGuide } from "../scene/alignmentGuide.js";
-import { loadModel } from "../scene/model.js";
+import { applyModelConfig, loadModel } from "../scene/model.js";
 import { createRenderer } from "../scene/renderer.js";
 import { createScene } from "../scene/scene.js";
 import {
   ensureOverlay,
   removeOverlay,
   setOverlayMode,
+  setOverlayDebug,
+  setOverlayTrackingStatus,
   showOverlayMessage,
 } from "../ui/overlay.js";
+import { clearElement, getAppRoot } from "../utils/dom.js";
 import { updateHitTest } from "./hitTest.js";
 import { handleSelect } from "./input.js";
 
 export async function startARExperience(state, { onExit, onFallback } = {}) {
   state.setMode("starting-ar");
+  clearElement(getAppRoot());
+  document.body.classList.add("xr-active");
 
   const scene = createScene();
   const camera = new THREE.PerspectiveCamera();
   const renderer = createRenderer();
   document.body.appendChild(renderer.domElement);
+
+  let model = null;
+  let session = null;
+  let pendingFallback = false;
+  let hitTestSource = null;
+  let referenceSpace = null;
 
   const overlay = ensureOverlay({
     state,
@@ -29,46 +40,65 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
       setOverlayMode("scanning");
     },
     onExit: () => {
-      if (state.xrSession) state.xrSession.end();
+      if (state.xrSession) {
+        state.xrSession.end();
+      } else if (onExit) {
+        onExit();
+      }
     },
-    onFallback,
+    onFallback: () => {
+      pendingFallback = true;
+      if (state.xrSession) {
+        state.xrSession.end();
+      } else if (onFallback) {
+        onFallback();
+      }
+    },
   });
 
-  let model = null;
-  let session = null;
-  let hitTestSource = null;
-  let referenceSpace = null;
+  setOverlayMode("starting");
 
   try {
-    model = await loadModel();
-    scene.add(model);
+    session = await requestARSession(renderer);
   } catch (error) {
     console.error(error);
     renderer.domElement.remove();
     removeOverlay();
+    document.body.classList.remove("xr-active");
     state.setError(error);
-    return;
-  }
-
-  const alignmentGuide = createAlignmentGuide();
-  scene.add(alignmentGuide);
-
-  try {
-    session = await requestARSession();
-  } catch (error) {
-    renderer.domElement.remove();
-    removeOverlay();
-    state.setError(error);
+    if (onExit) onExit();
     return;
   }
 
   state.xrSession = session;
-  renderer.xr.setSession(session);
+  setOverlayMode("loading");
+
+  const alignmentGuide = createAlignmentGuide();
+  scene.add(alignmentGuide);
+  const testCube = createARTestCube();
+  scene.add(testCube);
 
   try {
-    referenceSpace = await session.requestReferenceSpace("local");
-    const viewerSpace = await session.requestReferenceSpace("viewer");
-    hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
+    model = state.loadedModel || (await loadModel());
+    state.loadedModel = model;
+    applyModelConfig(model);
+    model.visible = false;
+    scene.add(model);
+  } catch (error) {
+    console.error(error);
+    if (state.xrSession) {
+      await state.xrSession.end();
+    }
+    renderer.domElement.remove();
+    removeOverlay();
+    document.body.classList.remove("xr-active");
+    state.setError(error);
+    return;
+  }
+
+  try {
+    referenceSpace = renderer.xr.getReferenceSpace();
+    hitTestSource = await requestHitTestSource(renderer);
   } catch (error) {
     console.error("Hit-test setup failed", error);
     showOverlayMessage(
@@ -78,6 +108,8 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
     renderer.dispose();
     renderer.domElement.remove();
     await session.end();
+    state.xrSession = null;
+    document.body.classList.remove("xr-active");
     state.setMode("unsupported");
     return;
   }
@@ -98,13 +130,18 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
     renderer.dispose();
     renderer.domElement.remove();
     removeOverlay();
+    document.body.classList.remove("xr-active");
     state.xrSession = null;
     state.anchor = null;
     state.lastHitMatrix = null;
     state.lastHitResult = null;
     state.modelPlaced = false;
     state.setMode("ready");
-    if (onExit) onExit();
+    if (pendingFallback && onFallback) {
+      onFallback();
+    } else if (onExit) {
+      onExit();
+    }
   });
 
   const resize = () => {
@@ -121,8 +158,13 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
       hitTestSource,
       alignmentGuide,
       state,
+      onTrackingStatus: (hasHit) => {
+        setOverlayTrackingStatus(hasHit);
+        updateTestCube(testCube, state.lastHitMatrix);
+      },
     });
 
+    setOverlayDebug(state);
     renderer.render(scene, camera);
   });
 
@@ -138,31 +180,71 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
   return overlay;
 }
 
-async function requestARSession() {
-  const preferredInit = {
+function createARTestCube() {
+  const geometry = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+  const material = new THREE.MeshBasicMaterial({ color: 0xfff200 });
+  const cube = new THREE.Mesh(geometry, material);
+  cube.visible = false;
+  cube.matrixAutoUpdate = false;
+  return cube;
+}
+
+function updateTestCube(cube, hitMatrix) {
+  if (!APP_CONFIG.ui.showARTestCube || !hitMatrix) {
+    cube.visible = false;
+    return;
+  }
+
+  cube.matrix.copy(hitMatrix);
+  cube.matrix.decompose(cube.position, cube.quaternion, cube.scale);
+  cube.position.y += 0.12;
+  cube.updateMatrix();
+  cube.visible = true;
+}
+
+async function requestARSession(renderer) {
+  const sessionInit = {
     requiredFeatures: APP_CONFIG.features.requireHitTest ? ["hit-test"] : [],
     optionalFeatures: [],
   };
 
   if (APP_CONFIG.features.requestAnchors) {
-    preferredInit.optionalFeatures.push("anchors");
+    sessionInit.optionalFeatures.push("anchors");
   }
 
   if (APP_CONFIG.features.requestDomOverlay) {
-    preferredInit.optionalFeatures.push("dom-overlay");
-    preferredInit.domOverlay = { root: document.body };
+    sessionInit.optionalFeatures.push("dom-overlay");
+    sessionInit.domOverlay = { root: document.body };
   }
 
+  renderer.xr.setReferenceSpaceType("local");
+
   try {
-    return await navigator.xr.requestSession("immersive-ar", preferredInit);
+    const session = await navigator.xr.requestSession("immersive-ar", sessionInit);
+    await renderer.xr.setSession(session);
+    return session;
   } catch (firstError) {
     console.warn(
-      "Preferred WebXR session failed. Retrying minimal AR session.",
+      "Preferred WebXR session failed. Retrying without optional features.",
       firstError
     );
 
-    return navigator.xr.requestSession("immersive-ar", {
+    const minimalSession = await navigator.xr.requestSession("immersive-ar", {
       requiredFeatures: APP_CONFIG.features.requireHitTest ? ["hit-test"] : [],
     });
+    await renderer.xr.setSession(minimalSession);
+    return minimalSession;
   }
+}
+
+async function requestHitTestSource(renderer) {
+  const session = renderer.xr.getSession();
+  const viewerSpace = await session.requestReferenceSpace("viewer");
+  const hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
+
+  session.addEventListener("end", () => {
+    hitTestSource.cancel();
+  });
+
+  return hitTestSource;
 }

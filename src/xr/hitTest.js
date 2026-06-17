@@ -4,13 +4,17 @@ export function updateHitTest({
   hitTestSource,
   alignmentGuide,
   state,
+  onTrackingStatus,
 }) {
   if (state.mode !== "scanning-surface") return;
   if (!hitTestSource) return;
 
   const results = frame.getHitTestResults(hitTestSource);
+  const hasHit = results.length > 0;
+  state.recordHitTest(hasHit);
+  if (onTrackingStatus) onTrackingStatus(hasHit);
 
-  if (results.length > 0) {
+  if (hasHit) {
     const hit = results[0];
     const pose = hit.getPose(referenceSpace);
 

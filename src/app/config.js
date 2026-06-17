@@ -6,7 +6,8 @@ export const APP_CONFIG = {
   },
 
   model: {
-    url: "/models/FrameStructure_test_v0.glb",
+    url: "/models/FrameStructure_test_v1_vertical.glb",
+    dracoDecoderPath: "/draco/gltf/",
     scale: 1.0,
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
@@ -22,8 +23,8 @@ export const APP_CONFIG = {
   alignmentGuide: {
     type: "axes",
     axes: {
-      length: 0.45,
-      thickness: 0.015,
+      length: 0.7,
+      thickness: 0.012,
     },
     rectangle: {
       width: 0.6,
@@ -40,6 +41,7 @@ export const APP_CONFIG = {
 
   ui: {
     showDebugPanel: false,
+    showARTestCube: false,
     allowFallbackViewer: true,
     allowReset: true,
     allowDetailMode: false,

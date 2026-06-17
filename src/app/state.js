@@ -8,8 +8,12 @@ export class AppState {
     this.anchor = null;
     this.lastHitMatrix = null;
     this.lastHitResult = null;
+    this.hitTestFrames = 0;
+    this.hitTestHits = 0;
+    this.lastHitTime = null;
     this.error = null;
     this.activeExperience = null;
+    this.loadedModel = null;
     this.listeners = new Set();
   }
 
@@ -39,7 +43,19 @@ export class AppState {
     this.anchor = null;
     this.lastHitMatrix = null;
     this.lastHitResult = null;
+    this.hitTestFrames = 0;
+    this.hitTestHits = 0;
+    this.lastHitTime = null;
     this.setMode("scanning-surface");
+  }
+
+  recordHitTest(hasHit) {
+    this.hitTestFrames += 1;
+
+    if (hasHit) {
+      this.hitTestHits += 1;
+      this.lastHitTime = performance.now();
+    }
   }
 
   onChange(listener) {

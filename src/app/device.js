@@ -20,7 +20,7 @@ export function detectDevice() {
 
   if (isAndroid && isChrome) {
     instruction =
-      "Recommended setup detected: Android + Chrome. Tap Start AR to continue.";
+      "Recommended setup detected: Android + Chrome. Load the model, then tap Enter AR.";
     severity = "ok";
   } else if (isAndroid && !isChrome) {
     instruction = "For AR, open this page in Google Chrome on Android.";

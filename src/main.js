@@ -33,22 +33,26 @@ async function main() {
       state,
       device,
       support,
-      onStartAR: () =>
-        startARExperience(state, {
-          onExit: showLanding,
-          onFallback: openViewer,
-        }),
-      onOpenViewer: openViewer,
+      onLoadModel: () => openViewer({ allowAR: support.immersiveAR }),
     });
   };
 
-  const openViewer = () => {
+  const startAR = () =>
+    startARExperience(state, {
+      onExit: showLanding,
+      onFallback: () => openViewer({ allowAR: support.immersiveAR }),
+    });
+
+  const openViewer = ({ allowAR = false } = {}) => {
     if (state.activeExperience?.dispose) {
       state.activeExperience.dispose();
     }
 
     state.setMode("fallback-viewer");
-    startFallbackViewer(state, { onBack: showLanding });
+    startFallbackViewer(state, {
+      onBack: showLanding,
+      onEnterAR: allowAR ? startAR : null,
+    });
   };
 
   showLanding();

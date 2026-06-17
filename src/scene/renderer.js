@@ -6,10 +6,9 @@ export function createRenderer({ alpha = true } = {}) {
     alpha,
   });
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.xr.enabled = true;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   return renderer;
 }

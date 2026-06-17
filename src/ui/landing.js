@@ -6,8 +6,7 @@ export function createLandingUI({
   state,
   device,
   support,
-  onStartAR,
-  onOpenViewer,
+  onLoadModel,
 }) {
   const root = getAppRoot();
   clearElement(root);
@@ -36,23 +35,13 @@ export function createLandingUI({
   const instructions = createInstructions();
   const actions = createElement("div", { className: "actions" });
 
-  if (support.immersiveAR) {
-    const startButton = createElement("button", {
-      className: "button button-primary",
-      text: "Start AR",
-      type: "button",
-    });
-    startButton.addEventListener("click", onStartAR);
-    actions.append(startButton);
-  }
-
-  const viewerButton = createElement("button", {
-    className: "button button-secondary",
-    text: "Open 3D Viewer",
+  const loadButton = createElement("button", {
+    className: "button button-primary",
+    text: "Load Model",
     type: "button",
   });
-  viewerButton.addEventListener("click", onOpenViewer);
-  actions.append(viewerButton);
+  loadButton.addEventListener("click", onLoadModel);
+  actions.append(loadButton);
 
   panel.append(eyebrow, title, subtitle, instruction, supportNote, instructions, actions);
   page.append(panel);
@@ -72,7 +61,8 @@ function createInstructions() {
   [
     "Stand on the marked point.",
     "Point your phone at the alignment marker.",
-    "Tap Start AR.",
+    "Load the model.",
+    "Tap Enter AR.",
     "When the alignment axes appear, tap once.",
     "Walk around the model to inspect it at full scale.",
   ].forEach((item) => {

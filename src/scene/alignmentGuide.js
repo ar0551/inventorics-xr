@@ -25,13 +25,25 @@ function createAxesGuide() {
     thickness * 2.5
   );
 
-  const xMat = new THREE.MeshBasicMaterial({ color: 0xe11d48 });
-  const zMat = new THREE.MeshBasicMaterial({ color: 0x2563eb });
-  const centerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const xMat = new THREE.MeshBasicMaterial({
+    color: 0xff1744,
+    depthTest: false,
+  });
+  const zMat = new THREE.MeshBasicMaterial({
+    color: 0x00e5ff,
+    depthTest: false,
+  });
+  const centerMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    depthTest: false,
+  });
 
   const xAxis = new THREE.Mesh(xGeom, xMat);
   const zAxis = new THREE.Mesh(zGeom, zMat);
   const center = new THREE.Mesh(centerGeom, centerMat);
+  xAxis.renderOrder = 10;
+  zAxis.renderOrder = 10;
+  center.renderOrder = 11;
 
   xAxis.position.y = 0.01;
   zAxis.position.y = 0.01;

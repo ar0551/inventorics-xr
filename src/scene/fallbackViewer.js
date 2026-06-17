@@ -3,10 +3,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createCamera } from "./camera.js";
 import { createRenderer } from "./renderer.js";
 import { createScene } from "./scene.js";
-import { frameModelForViewer, loadModel } from "./model.js";
+import { applyModelConfig, frameModelForViewer, loadModel } from "./model.js";
 import { clearElement, createElement, getAppRoot } from "../utils/dom.js";
 
-export async function startFallbackViewer(state, { onBack } = {}) {
+export async function startFallbackViewer(state, { onBack, onEnterAR } = {}) {
   const root = getAppRoot();
   clearElement(root);
 
@@ -21,13 +21,22 @@ export async function startFallbackViewer(state, { onBack } = {}) {
     text: "Back",
     type: "button",
   });
+  const enterARButton = createElement("button", {
+    className: "button button-primary",
+    text: "Enter AR",
+    type: "button",
+  });
+  enterARButton.disabled = true;
+  enterARButton.hidden = !onEnterAR;
   const canvasHost = createElement("div", { className: "viewer-canvas" });
   const status = createElement("div", {
     className: "viewer-status",
     text: "Loading model...",
   });
 
-  toolbar.append(title, backButton);
+  const toolbarActions = createElement("div", { className: "viewer-actions" });
+  toolbarActions.append(enterARButton, backButton);
+  toolbar.append(title, toolbarActions);
   shell.append(toolbar, canvasHost, status);
   root.append(shell);
 
@@ -42,7 +51,12 @@ export async function startFallbackViewer(state, { onBack } = {}) {
   controls.target.set(0, 0.6, 0);
 
   const grid = new THREE.GridHelper(4, 16, 0x9ca3af, 0xd1d5db);
+  grid.position.set(0, 0, 0);
   scene.add(grid);
+
+  const originAxes = new THREE.AxesHelper(0.5);
+  originAxes.position.set(0, 0, 0);
+  scene.add(originAxes);
 
   let disposed = false;
 
@@ -68,19 +82,31 @@ export async function startFallbackViewer(state, { onBack } = {}) {
     dispose();
     if (onBack) onBack();
   });
+  enterARButton.addEventListener("click", () => {
+    if (!onEnterAR || enterARButton.disabled) return;
+    dispose();
+    onEnterAR();
+  });
 
   window.addEventListener("resize", resize);
   resize();
 
   try {
-    const model = await loadModel({ visible: true });
-    scene.add(model);
-    frameModelForViewer(model, camera, controls);
-    status.hidden = true;
+    const sourceModel = state.loadedModel || (await loadModel({ visible: false }));
+    state.loadedModel = sourceModel;
+    applyModelConfig(sourceModel);
+    sourceModel.visible = false;
+
+    const viewerModel = sourceModel.clone(true);
+    viewerModel.visible = true;
+    scene.add(viewerModel);
+    const frame = frameModelForViewer(viewerModel, camera, controls);
+    status.textContent = `Model loaded (${formatMeters(frame.size.x)} x ${formatMeters(frame.size.y)} x ${formatMeters(frame.size.z)}).`;
+    status.classList.add("viewer-status-loaded");
+    enterARButton.disabled = false;
   } catch (error) {
     console.error(error);
-    status.textContent =
-      "The 3D model could not be loaded. Check that the GLB exists in public/models.";
+    status.textContent = `The 3D model could not be loaded. ${getLoadErrorMessage(error)}`;
   }
 
   renderer.setAnimationLoop(() => {
@@ -88,4 +114,24 @@ export async function startFallbackViewer(state, { onBack } = {}) {
     controls.update();
     renderer.render(scene, camera);
   });
+}
+
+function getLoadErrorMessage(error) {
+  const message = error?.message || String(error);
+
+  if (message.includes("DRACOLoader")) {
+    return "This model uses Draco compression, but the decoder could not be loaded.";
+  }
+
+  if (message.includes("404") || message.includes("Not Found")) {
+    return "Check that the GLB exists in public/models.";
+  }
+
+  return message;
+}
+
+function formatMeters(value) {
+  if (!Number.isFinite(value)) return "? m";
+  if (value < 1) return `${Math.round(value * 100)} cm`;
+  return `${value.toFixed(2)} m`;
 }
