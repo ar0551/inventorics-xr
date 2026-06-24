@@ -6,7 +6,7 @@ export const APP_CONFIG = {
   },
 
   model: {
-    url: "/models/optimized/FrameStructure_v4_10_1024.glb",
+    url: "/models/optimized/FrameStructure_v5_10_1024.glb",
     dracoDecoderPath: "/draco/gltf/",
     scale: 1.0,
     position: { x: 0, y: 0, z: 0 },
