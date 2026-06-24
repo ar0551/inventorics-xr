@@ -57,7 +57,7 @@ export function createLandingUI({
   root.append(page);
 }
 
-function createProjectInfo(instructions) {
+export function createProjectInfo(instructions = null) {
   const aside = createElement("aside", { className: "landing-info" });
   const about = createElement("section", { className: "about-project" });
   const heading = createElement("h2", { text: "About the project" });
@@ -79,7 +79,8 @@ function createProjectInfo(instructions) {
   about.append(heading, description, team);
   if (links) about.append(links);
 
-  aside.append(about, instructions);
+  aside.append(about);
+  if (instructions) aside.append(instructions);
   return aside;
 }
 

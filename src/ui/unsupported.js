@@ -1,6 +1,7 @@
-import { isDebugEnabled } from "../app/config.js";
+import { APP_CONFIG, isDebugEnabled } from "../app/config.js";
 import { clearElement, createElement, getAppRoot } from "../utils/dom.js";
 import { createDebugPanel } from "./debugPanel.js";
+import { createProjectInfo } from "./landing.js";
 
 export function createUnsupportedUI({
   state,
@@ -13,8 +14,20 @@ export function createUnsupportedUI({
   clearElement(root);
 
   const page = createElement("main", { className: "page-shell" });
-  const panel = createElement("section", { className: "landing-panel" });
+  const panel = createElement("section", { className: "landing-panel landing-hero" });
+  const eyebrow = createElement("p", {
+    className: "eyebrow",
+    text: APP_CONFIG.project.code,
+  });
   const title = createElement("h1", {
+    text: APP_CONFIG.project.title,
+  });
+  const projectSubtitle = createElement("p", {
+    className: "project-subtitle",
+    text: APP_CONFIG.project.subtitle,
+  });
+  const unavailable = createElement("p", {
+    className: "ar-unavailable",
     text: "AR is not available on this device/browser.",
   });
   const reason = createElement("p", {
@@ -39,7 +52,7 @@ export function createUnsupportedUI({
       <p>You can still inspect the model in the 3D viewer.</p>
     `,
   });
-  const actions = createElement("div", { className: "actions" });
+  const actions = createElement("div", { className: "actions landing-actions" });
   const viewerButton = createElement("button", {
     className: "button button-primary",
     text: "Open 3D Viewer",
@@ -58,8 +71,8 @@ export function createUnsupportedUI({
     actions.append(backButton);
   }
 
-  panel.append(title, reason, recommended, actions);
-  page.append(panel);
+  panel.append(eyebrow, title, projectSubtitle, unavailable, reason, actions, recommended);
+  page.append(panel, createProjectInfo());
 
   if (isDebugEnabled()) {
     page.append(createDebugPanel({ state }));
