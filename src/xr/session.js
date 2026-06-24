@@ -172,7 +172,7 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
       },
     });
 
-    if (state.modelPlaced && state.anchor && model) {
+    if (shouldUpdateAnchorPlacement(state, model)) {
       updateModelFromAnchor({
         frame,
         referenceSpace,
@@ -201,6 +201,16 @@ function deleteAnchor(anchor) {
   if (anchor && typeof anchor.delete === "function") {
     anchor.delete();
   }
+}
+
+function shouldUpdateAnchorPlacement(state, model) {
+  return (
+    APP_CONFIG.placement.useAnchorsIfAvailable &&
+    APP_CONFIG.features.requestAnchors &&
+    state.modelPlaced &&
+    state.anchor &&
+    model
+  );
 }
 
 function createARTestCube() {

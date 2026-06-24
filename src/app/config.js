@@ -26,7 +26,7 @@ export const APP_CONFIG = {
     offset: { x: 0, y: 0, z: -1.2 },
     rotationY: 0,
     lockAfterPlacement: true,
-    useAnchorsIfAvailable: true,
+    useAnchorsIfAvailable: false,
   },
 
   alignmentGuide: {
@@ -44,7 +44,7 @@ export const APP_CONFIG = {
 
   features: {
     requireHitTest: true,
-    requestAnchors: true,
+    requestAnchors: false,
     requestDomOverlay: true,
   },
 
