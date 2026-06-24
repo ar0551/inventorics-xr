@@ -5,7 +5,7 @@ import { applyModelConfig } from "./model.js";
 export function placeModelAtMatrix(model, referenceMatrix) {
   const base = new THREE.Object3D();
   base.matrixAutoUpdate = false;
-  base.matrix.copy(referenceMatrix);
+  setMatrix(base.matrix, referenceMatrix);
   base.matrix.decompose(base.position, base.quaternion, base.scale);
 
   const offset = new THREE.Vector3(
@@ -25,4 +25,18 @@ export function placeModelAtMatrix(model, referenceMatrix) {
 
 export function placeModelAtWorldOrigin(model) {
   placeModelAtMatrix(model, new THREE.Matrix4());
+}
+
+function setMatrix(target, source) {
+  if (source?.isMatrix4) {
+    target.copy(source);
+    return;
+  }
+
+  if (source?.length === 16) {
+    target.fromArray(source);
+    return;
+  }
+
+  throw new TypeError("Expected a THREE.Matrix4 or 16-value WebXR matrix.");
 }

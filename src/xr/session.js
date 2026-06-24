@@ -120,9 +120,14 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
   setOverlayMode("scanning");
 
   session.addEventListener("select", async () => {
-    await handleSelect({ state, model, alignmentGuide });
-    if (state.mode === "model-placed") {
-      setOverlayMode("placed");
+    try {
+      await handleSelect({ state, model, alignmentGuide });
+      if (state.mode === "model-placed") {
+        setOverlayMode("placed");
+      }
+    } catch (error) {
+      console.error("Placement failed", error);
+      showOverlayMessage("Placement failed. Please re-align and try again.");
     }
   });
 
