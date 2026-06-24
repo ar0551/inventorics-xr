@@ -4,6 +4,7 @@ import { createCamera } from "./camera.js";
 import { createRenderer } from "./renderer.js";
 import { createScene } from "./scene.js";
 import { applyModelConfig, frameModelForViewer, loadModel } from "./model.js";
+import { placeModelAtWorldOrigin } from "./placement.js";
 import { clearElement, createElement, getAppRoot } from "../utils/dom.js";
 
 export async function startFallbackViewer(state, { onBack, onEnterAR } = {}) {
@@ -98,7 +99,7 @@ export async function startFallbackViewer(state, { onBack, onEnterAR } = {}) {
     sourceModel.visible = false;
 
     const viewerModel = sourceModel.clone(true);
-    viewerModel.visible = true;
+    placeModelAtWorldOrigin(viewerModel);
     scene.add(viewerModel);
     const frame = frameModelForViewer(viewerModel, camera, controls);
     status.textContent = `Model loaded (${formatMeters(frame.size.x)} x ${formatMeters(frame.size.y)} x ${formatMeters(frame.size.z)}).`;

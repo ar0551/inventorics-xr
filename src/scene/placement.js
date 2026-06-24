@@ -22,3 +22,7 @@ export function placeModelAtMatrix(model, referenceMatrix) {
   model.rotateY(APP_CONFIG.placement.rotationY);
   model.visible = true;
 }
+
+export function placeModelAtWorldOrigin(model) {
+  placeModelAtMatrix(model, new THREE.Matrix4());
+}
