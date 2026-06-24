@@ -85,6 +85,7 @@ canvas {
 }
 
 .landing-hero {
+  position: relative;
   display: flex;
   min-height: min(620px, calc(100vh - 96px));
   flex-direction: column;
@@ -93,6 +94,14 @@ canvas {
   background:
     linear-gradient(135deg, rgb(15 118 110 / 8%), rgb(255 255 255 / 0%) 46%),
     #ffffff;
+}
+
+.landing-logo {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  width: clamp(54px, 12vw, 92px);
+  height: auto;
 }
 
 .landing-page .landing-hero {
@@ -426,6 +435,12 @@ textarea:focus-visible {
 @media (max-width: 520px) {
   h1 {
     font-size: 2.4rem;
+  }
+
+  .landing-logo {
+    top: 16px;
+    right: 16px;
+    width: 52px;
   }
 
   .actions,

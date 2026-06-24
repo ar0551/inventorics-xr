@@ -13,6 +13,9 @@ export function createLandingUI({
 
   const page = createElement("main", { className: "page-shell landing-page" });
   const panel = createElement("section", { className: "landing-panel landing-hero" });
+  const logo = createElement("img", { className: "landing-logo" });
+  logo.src = "/logo_v3.png";
+  logo.alt = "Inventorics";
   const eyebrow = createElement("p", {
     className: "eyebrow",
     text: APP_CONFIG.project.code,
@@ -48,6 +51,7 @@ export function createLandingUI({
   actions.append(loadButton);
 
   panel.append(
+    logo,
     eyebrow,
     title,
     projectSubtitle,
