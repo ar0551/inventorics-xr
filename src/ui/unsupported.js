@@ -15,6 +15,9 @@ export function createUnsupportedUI({
 
   const page = createElement("main", { className: "page-shell" });
   const panel = createElement("section", { className: "landing-panel landing-hero" });
+  const logo = createElement("img", { className: "landing-logo" });
+  logo.src = "/logo_v3.png";
+  logo.alt = "Inventorics";
   const eyebrow = createElement("p", {
     className: "eyebrow",
     text: APP_CONFIG.project.code,
@@ -71,7 +74,7 @@ export function createUnsupportedUI({
     actions.append(backButton);
   }
 
-  panel.append(eyebrow, title, projectSubtitle, unavailable, reason, actions, recommended);
+  panel.append(logo, eyebrow, title, projectSubtitle, unavailable, reason, actions, recommended);
   page.append(panel, createProjectInfo());
 
   if (isDebugEnabled()) {
