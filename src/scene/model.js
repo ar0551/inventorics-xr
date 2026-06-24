@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { APP_CONFIG } from "../app/config.js";
@@ -8,6 +9,7 @@ let dracoLoader = null;
 export async function loadModel({ visible = false } = {}) {
   const loader = new GLTFLoader();
   loader.setDRACOLoader(getDracoLoader());
+  loader.setMeshoptDecoder(MeshoptDecoder);
 
   const gltf = await loader.loadAsync(APP_CONFIG.model.url);
   const model = gltf.scene;
