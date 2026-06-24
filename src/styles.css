@@ -30,6 +30,18 @@ body.xr-active {
   background: transparent;
 }
 
+body.xr-active,
+body.xr-active #app {
+  background: transparent;
+}
+
+body.xr-active canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+}
+
 button,
 input,
 select,
