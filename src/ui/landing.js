@@ -33,7 +33,7 @@ export function createLandingUI({
       : support.reason || "AR support could not be confirmed.",
   });
   const instructions = createInstructions();
-  const actions = createElement("div", { className: "actions" });
+  const actions = createElement("div", { className: "actions landing-actions" });
 
   const loadButton = createElement("button", {
     className: "button button-primary",
@@ -43,7 +43,7 @@ export function createLandingUI({
   loadButton.addEventListener("click", onLoadModel);
   actions.append(loadButton);
 
-  panel.append(eyebrow, title, subtitle, instruction, supportNote, instructions, actions);
+  panel.append(eyebrow, title, subtitle, actions, instruction, supportNote, instructions);
   page.append(panel);
 
   if (isDebugEnabled()) {
