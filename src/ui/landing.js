@@ -12,15 +12,19 @@ export function createLandingUI({
   clearElement(root);
 
   const page = createElement("main", { className: "page-shell" });
-  const panel = createElement("section", { className: "landing-panel" });
+  const panel = createElement("section", { className: "landing-panel landing-hero" });
   const eyebrow = createElement("p", {
     className: "eyebrow",
-    text: "Site-calibrated AR exhibit viewer",
+    text: APP_CONFIG.project.code,
   });
-  const title = createElement("h1", { text: APP_CONFIG.app.title });
+  const title = createElement("h1", { text: APP_CONFIG.project.title });
+  const projectSubtitle = createElement("p", {
+    className: "project-subtitle",
+    text: APP_CONFIG.project.subtitle,
+  });
   const subtitle = createElement("p", {
     className: "lede",
-    text: "This browser-based AR viewer places a digital model in a calibrated exhibition location.",
+    text: "A site-calibrated AR viewer for inspecting a digital exhibition model in place.",
   });
   const instruction = createElement("p", {
     className: `device-note ${device.severity}`,
@@ -43,14 +47,56 @@ export function createLandingUI({
   loadButton.addEventListener("click", onLoadModel);
   actions.append(loadButton);
 
-  panel.append(eyebrow, title, subtitle, actions, instruction, supportNote, instructions);
-  page.append(panel);
+  panel.append(eyebrow, title, projectSubtitle, subtitle, actions, instruction, supportNote);
+  page.append(panel, createProjectInfo(instructions));
 
   if (isDebugEnabled()) {
     page.append(createDebugPanel({ state }));
   }
 
   root.append(page);
+}
+
+function createProjectInfo(instructions) {
+  const aside = createElement("aside", { className: "landing-info" });
+  const about = createElement("section", { className: "about-project" });
+  const heading = createElement("h2", { text: "About the project" });
+  const description = createElement("p", {
+    text: `"${APP_CONFIG.project.title} - ${APP_CONFIG.project.subtitle}" ${APP_CONFIG.project.code} is an artistic research project at the `,
+  });
+  description.append(
+    createExternalLink("University of Applied Arts Vienna", APP_CONFIG.project.universityUrl),
+    document.createTextNode(" funded by the "),
+    createExternalLink("Austrian Science Fund (FWF)", APP_CONFIG.project.funderUrl),
+    document.createTextNode(" within the PEEK programme.")
+  );
+
+  const team = createElement("p", {
+    text: "The team consists of architects, designers, programmers and engineers.",
+  });
+
+  const links = createProjectLinks();
+  about.append(heading, description, team);
+  if (links) about.append(links);
+
+  aside.append(about, instructions);
+  return aside;
+}
+
+function createExternalLink(text, href) {
+  const link = createElement("a", { text });
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  return link;
+}
+
+function createProjectLinks() {
+  if (!APP_CONFIG.project.websiteUrl) return null;
+
+  const links = createElement("p", { className: "project-links" });
+  links.append(createExternalLink("Project website", APP_CONFIG.project.websiteUrl));
+  return links;
 }
 
 function createInstructions() {

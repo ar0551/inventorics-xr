@@ -5,6 +5,15 @@ export const APP_CONFIG = {
     subtitle: "Web-based AR viewer for site-calibrated exhibition models",
   },
 
+  project: {
+    title: "Inventorics",
+    subtitle: "Recombining Artifacts for Innovation",
+    code: "AR 730-G",
+    websiteUrl: "https://inventorics.com/",
+    universityUrl: "http://www.dieangewandte.at/",
+    funderUrl: "https://www.fwf.ac.at/",
+  },
+
   model: {
     url: "/models/optimized/FrameStructure_v6_10_1024.glb",
     dracoDecoderPath: "/draco/gltf/",
