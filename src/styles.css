@@ -65,6 +65,11 @@ canvas {
   padding: 48px 20px;
 }
 
+.landing-page {
+  grid-template-columns: minmax(0, 760px);
+  align-items: start;
+}
+
 .landing-panel,
 .landing-info,
 .debug-panel {
@@ -88,6 +93,11 @@ canvas {
   background:
     linear-gradient(135deg, rgb(15 118 110 / 8%), rgb(255 255 255 / 0%) 46%),
     #ffffff;
+}
+
+.landing-page .landing-hero {
+  min-height: auto;
+  justify-content: start;
 }
 
 .landing-info {

@@ -8,7 +8,7 @@ export const APP_CONFIG = {
   project: {
     title: "Inventorics",
     subtitle: "Recombining Artifacts for Innovation",
-    code: "AR 730-G",
+    code: "FWF PEEK AR 730-G",
     websiteUrl: "https://inventorics.com/",
     universityUrl: "http://www.dieangewandte.at/",
     funderUrl: "https://www.fwf.ac.at/",

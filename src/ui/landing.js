@@ -11,7 +11,7 @@ export function createLandingUI({
   const root = getAppRoot();
   clearElement(root);
 
-  const page = createElement("main", { className: "page-shell" });
+  const page = createElement("main", { className: "page-shell landing-page" });
   const panel = createElement("section", { className: "landing-panel landing-hero" });
   const eyebrow = createElement("p", {
     className: "eyebrow",
@@ -47,8 +47,17 @@ export function createLandingUI({
   loadButton.addEventListener("click", onLoadModel);
   actions.append(loadButton);
 
-  panel.append(eyebrow, title, projectSubtitle, subtitle, actions, instruction, supportNote);
-  page.append(panel, createProjectInfo(instructions));
+  panel.append(
+    eyebrow,
+    title,
+    projectSubtitle,
+    subtitle,
+    actions,
+    instructions,
+    instruction,
+    supportNote
+  );
+  page.append(panel, createProjectInfo());
 
   if (isDebugEnabled()) {
     page.append(createDebugPanel({ state }));
