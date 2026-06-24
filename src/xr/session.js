@@ -13,6 +13,7 @@ import {
   showOverlayMessage,
 } from "../ui/overlay.js";
 import { clearElement, getAppRoot } from "../utils/dom.js";
+import { updateModelFromAnchor } from "./anchors.js";
 import { updateHitTest } from "./hitTest.js";
 import { handleSelect } from "./input.js";
 
@@ -36,6 +37,7 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
     state,
     onRealign: () => {
       if (model) model.visible = false;
+      deleteAnchor(state.anchor);
       state.resetPlacement();
       setOverlayMode("scanning");
     },
@@ -126,6 +128,7 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
 
   session.addEventListener("end", () => {
     if (hitTestSource) hitTestSource.cancel();
+    deleteAnchor(state.anchor);
     renderer.setAnimationLoop(null);
     renderer.dispose();
     renderer.domElement.remove();
@@ -164,6 +167,15 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
       },
     });
 
+    if (state.modelPlaced && state.anchor && model) {
+      updateModelFromAnchor({
+        frame,
+        referenceSpace,
+        anchor: state.anchor,
+        model,
+      });
+    }
+
     setOverlayDebug(state);
     renderer.render(scene, camera);
   });
@@ -178,6 +190,12 @@ export async function startARExperience(state, { onExit, onFallback } = {}) {
   };
 
   return overlay;
+}
+
+function deleteAnchor(anchor) {
+  if (anchor && typeof anchor.delete === "function") {
+    anchor.delete();
+  }
 }
 
 function createARTestCube() {

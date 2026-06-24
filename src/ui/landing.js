@@ -24,7 +24,7 @@ export function createLandingUI({
   });
   const subtitle = createElement("p", {
     className: "lede",
-    text: "A site-calibrated AR viewer for inspecting a digital exhibition model in place.",
+    text: "A site-calibrated AR viewer for inspecting a reused bicycle frame structure.",
   });
   const instruction = createElement("p", {
     className: `device-note ${device.severity}`,

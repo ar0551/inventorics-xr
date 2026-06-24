@@ -1,4 +1,5 @@
 import { debugLog } from "../utils/logger.js";
+import { placeModelAtMatrix } from "../scene/placement.js";
 
 export async function tryCreateAnchor(hitResult) {
   if (!hitResult) return null;
@@ -16,9 +17,12 @@ export async function tryCreateAnchor(hitResult) {
   }
 }
 
-export function updateFromAnchor({ frame, referenceSpace, anchor }) {
+export function updateModelFromAnchor({ frame, referenceSpace, anchor, model }) {
   if (!anchor) return false;
 
   const pose = frame.getPose(anchor.anchorSpace, referenceSpace);
-  return Boolean(pose);
+  if (!pose) return false;
+
+  placeModelAtMatrix(model, pose.transform.matrix);
+  return true;
 }
